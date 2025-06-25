@@ -263,7 +263,7 @@ def get_advanced_theme_css():
 
 # Initialize session state
 if 'current_stock' not in st.session_state:
-    st.session_state.current_stock = 'ASIANPAINT'
+    st.session_state.current_stock = 'ADANIPORTS'
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
 
@@ -277,12 +277,8 @@ stock_symbols.sort()  # Sort for consistent display
 
 # Define model and scaler file mappings
 model_mappings = {
-    'ADANIPORTS': ('models/ADANIPORTS_model.h5', 'models/ADANIPORTS_scaler.pkl'),
-    'ASIANPAINT': ('models/ASIANPAINT.h5', 'models/ASIANPAINT.pkl'),
-    'BRITANNIA': ('models/BRITANNIA_model.h5', 'models/BRITANNIA_scaler.pkl'),
-    'HDFCBANK': ('models/HDFCBANK_model.h5', 'models/HDFCBANK_scaler.pkl'),
-    'ONGC': ('models/ONGC_model.h5', 'models/ONGC_scaler.pkl'),
-    'TATASTEEL': ('models/TATASTEEL_model.h5', 'models/TATASTEEL_scaler.pkl')
+    symbol: (f'models/{symbol}_model.h5', f'models/{symbol}_scaler.pkl')
+    for symbol in stock_symbols
 }
 
 # Load dataset
