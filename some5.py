@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,7 +13,7 @@ warnings.filterwarnings('ignore')
 
 # Configure page
 st.set_page_config(
-    page_title="StockVision Pro",
+    page_title="Stock Analytics",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -25,31 +26,52 @@ def get_advanced_theme_css():
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
         
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            --backdrop-filter: blur(20px);
+            --primary-gradient: linear-gradient(135deg, #5a67d8 0%, #6b46c1);
+            --secondary-gradient: linear-gradient(135deg, #ed64a6 0%, #f56565);
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #06b6d4);
+            --dark-gradient: linear-gradient(135deg, #1f2937 0%, #374151);
+            --green-positive: #22c55e; /* Vibrant green for price increases */
+            --red-negative: #ef4444; /* Red for price decreases */
+            --text-primary: #ffffff; /* Default text color for dark mode */
+            --text-secondary: #d1d5db; /* Secondary text for dark mode */
+            --glass-bg-dark: rgba(31, 41, 55, 0.4); /* Glass for dark mode */
+            --glass-bg-light: rgba(255, 255, 255, 0.6); /* Glass for light mode */
+            --glass-border-dark: rgba(255, 255, 255, 0.3);
+            --glass-border-light: rgba(0, 0, 0, 0.1);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            --backdrop-filter: blur(10px);
+            --bg-light: #f3f4f6; /* Light mode background */
+            --bg-dark: #1f2937; /* Dark mode background */
+            --sidebar-bg: #1e3a8a; /* Solid sidebar color */
+            --text-sidebar: #ffffff; /* Sidebar text color */
         }
         
+        /* Apply theme based on dark mode */
         .stApp {
-            background: var(--primary-gradient);
+            background: var(--bg-dark);
             font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+        
+        [data-testid="stAppViewContainer"] {
+            background: var(--bg-dark);
+        }
+        
+        /* Light mode styles */
+        [data-baseweb="baseui"] {
+            background: var(--bg-dark);
         }
         
         .main-header {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-dark);
             border-radius: 20px;
             padding: 2rem;
             margin-bottom: 2rem;
             box-shadow: var(--shadow);
             text-align: center;
-            color: white;
+            color: var(--text-primary);
         }
         
         .main-header h1 {
@@ -57,29 +79,25 @@ def get_advanced_theme_css():
             font-weight: 700;
             font-size: 3rem;
             margin: 0;
-            # background: linear-gradient(45deg, #fff, #f093fb);
-            # -webkit-background-clip: text;
-            # -webkit-text-fill-color: transparent;
-            # background-clip: text;
-            color: white;
+            color: var(--text-primary);
         }
         
         .metric-card {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-dark);
             border-radius: 15px;
             padding: 1.5rem;
             margin: 10px 0;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
-            color: white;
+            color: var(--text-primary);
             text-align: center;
         }
         
         .metric-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.5);
+            box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.3);
         }
         
         .metric-card h4 {
@@ -87,6 +105,7 @@ def get_advanced_theme_css():
             font-weight: 500;
             opacity: 0.8;
             font-size: 0.9rem;
+            color: var(--text-secondary);
         }
         
         .metric-card h2 {
@@ -101,98 +120,93 @@ def get_advanced_theme_css():
             padding: 1.5rem;
             margin: 10px 0;
             box-shadow: var(--shadow);
-            color: white;
+            color: var(--text-primary);
             text-align: center;
             transition: all 0.3s ease;
         }
         
         .prediction-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 35px 0 rgba(79, 172, 254, 0.4);
+            box-shadow: 0 12px 35px 0 rgba(0, 0, 0, 0.3);
         }
         
         .feature-card {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-dark);
             border-radius: 20px;
             padding: 2rem;
             margin: 1rem 0;
             box-shadow: var(--shadow);
-            color: white;
+            color: var(--text-primary);
         }
         
         .stButton > button {
             background: var(--accent-gradient);
-            color: white;
+            color: var(--text-primary);
             border: none;
             border-radius: 25px;
             padding: 0.8rem 2rem;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         
         .stButton > button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
-        }
-        
-        .sidebar .stSelectbox > div > div {
-            background: var(--glass-bg);
-            backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
         
         .stSelectbox > div > div {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-dark);
             border-radius: 10px;
-            color: white;
+            color: var(--text-primary);
         }
         
         .stDataFrame {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
             border-radius: 15px;
             overflow: hidden;
+            color: var(--text-primary);
         }
         
         .prediction-summary {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-dark);
             border-radius: 15px;
             padding: 1rem;
             margin: 1rem 0;
-            color: white;
+            color: var(--text-primary);
         }
         
         .section-header {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
-            color: white;
+            color: var(--text-primary);
             margin: 2rem 0 1rem 0;
             font-size: 1.5rem;
         }
         
         .chart-container {
-            background: var(--glass-bg);
+            background: var(--glass-bg-dark);
             backdrop-filter: var(--backdrop-filter);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-dark);
             border-radius: 15px;
             padding: 1rem;
             margin: 1rem 0;
         }
         
         /* Sidebar styling */
-        .css-1d391kg {
-            background: linear-gradient(180deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
-            backdrop-filter: blur(20px);
+        [data-testid="stSidebar"] {
+            background: var(--sidebar-bg);
+            color: var(--text-sidebar);
         }
+        
         
         /* Animation keyframes */
         @keyframes fadeInUp {
@@ -219,6 +233,31 @@ def get_advanced_theme_css():
                 padding: 1rem;
             }
         }
+
+        /* Light mode styles */
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] {
+            background: var(--bg-light) !important;
+            color: #1f2937 !important;
+        }
+        
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .main-header,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .metric-card,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .feature-card,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .prediction-summary,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .chart-container,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .stSelectbox > div > div,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .stDataFrame {
+            background: var(--glass-bg-light) !important;
+            border: 1px solid var(--glass-border-light) !important;
+            color: #1f2937 !important;
+        }
+        
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .section-header,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .main-header h1,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .metric-card h4,
+        [data-testid="stAppViewContainer"][style*="background-color: rgb(255, 255, 255)"] .metric-card h2 {
+            color: #1f2937 !important;
+        }
     </style>
     """
 
@@ -231,12 +270,29 @@ if 'dark_mode' not in st.session_state:
 # Apply theme
 st.markdown(get_advanced_theme_css(), unsafe_allow_html=True)
 
-# ... (Previous imports and CSS remain unchanged)
+# Get list of available stocks from datasets directory
+dataset_dir = 'datasets'
+stock_symbols = [os.path.splitext(f)[0] for f in os.listdir(dataset_dir) if f.endswith('.csv')]
+stock_symbols.sort()  # Sort for consistent display
+
+# Define model and scaler file mappings
+model_mappings = {
+    'ADANIPORTS': ('models/ADANIPORTS_model.h5', 'models/ADANIPORTS_scaler.pkl'),
+    'ASIANPAINT': ('models/ASIANPAINT.h5', 'models/ASIANPAINT.pkl'),
+    'BRITANNIA': ('models/BRITANNIA_model.h5', 'models/BRITANNIA_scaler.pkl'),
+    'HDFCBANK': ('models/HDFCBANK_model.h5', 'models/HDFCBANK_scaler.pkl'),
+    'ONGC': ('models/ONGC_model.h5', 'models/ONGC_scaler.pkl'),
+    'TATASTEEL': ('models/TATASTEEL_model.h5', 'models/TATASTEEL_scaler.pkl')
+}
 
 # Load dataset
 @st.cache_data
-def load_stock_data(file_path='ASIANPAINT.csv'):
-    """Load and prepare the ASIANPAINT dataset"""
+def load_stock_data(stock_symbol):
+    """Load and prepare the stock dataset"""
+    file_path = os.path.join('datasets', f'{stock_symbol}.csv')
+    if not os.path.exists(file_path):
+        st.error(f"Dataset for {stock_symbol} not found at {file_path}")
+        return None
     data = pd.read_csv(file_path)
     data['Date'] = pd.to_datetime(data['Date'])
     data.set_index('Date', inplace=True)
@@ -245,11 +301,22 @@ def load_stock_data(file_path='ASIANPAINT.csv'):
 
 # Load model and scaler
 @st.cache_resource
-def load_model_and_scaler(model_path='stock_prediction_model.h5', scaler_path='scaler.pkl'):
-    """Load the pre-trained model and scaler"""
-    model = load_model(model_path)
-    scaler = joblib.load(scaler_path)
-    return model, scaler
+def load_model_and_scaler(stock_symbol):
+    """Load the pre-trained model and scaler for the selected stock"""
+    if stock_symbol not in model_mappings:
+        st.error(f"No model or scaler defined for {stock_symbol}")
+        return None, None
+    model_path, scaler_path = model_mappings[stock_symbol]
+    if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+        st.error(f"Model or scaler file not found for {stock_symbol}")
+        return None, None
+    try:
+        model = load_model(model_path)
+        scaler = joblib.load(scaler_path)
+        return model, scaler
+    except Exception as e:
+        st.error(f"Error loading model or scaler for {stock_symbol}: {str(e)}")
+        return None, None
 
 # Predict future prices
 def predict_future(model, data, scaler, horizon, time_steps=60):
@@ -310,7 +377,8 @@ with st.sidebar:
     st.markdown("### 📈 Stock Selection")
     stock_symbol = st.selectbox(
         "Choose Stock", 
-        ['ASIANPAINT'], 
+        stock_symbols, 
+        index=stock_symbols.index(st.session_state.current_stock) if st.session_state.current_stock in stock_symbols else 0,
         key="stock_selector"
     )
     st.session_state.current_stock = stock_symbol
@@ -328,8 +396,13 @@ with st.sidebar:
         st.error("🔴 Market Closed (IST)")
 
 # Load data and model
-data = load_stock_data()
-model, scaler = load_model_and_scaler()
+data = load_stock_data(stock_symbol)
+model, scaler = load_model_and_scaler(stock_symbol)
+
+# Check if data and model are loaded successfully
+if data is None or model is None or scaler is None:
+    st.stop()
+
 data = calculate_technical_indicators(data)
 
 # Main content based on selected page
@@ -337,7 +410,7 @@ if "Dashboard" in page:
     st.markdown(f'''
     <div class="main-header">
         <h1>📈 {st.session_state.current_stock}</h1>
-        <p style="font-size: 1.1rem; margin: 0; opacity: 0.9;">Advanced Stock Market Prediction Platform</p>
+        <p style="font-size: 1.1rem; margin: 0; opacity: 0.9;">Advanced Stock Market Analytics Platform</p>
     </div>
     ''', unsafe_allow_html=True)
     
@@ -381,7 +454,6 @@ if "Dashboard" in page:
     lower_bound = pred_prices_30 * 0.95
     fig_main.add_trace(go.Scatter(x=pred_dates_30, y=upper_bound, fill=None, mode='lines', line_color='rgba(0,0,0,0)', showlegend=False))
     fig_main.add_trace(go.Scatter(x=pred_dates_30, y=lower_bound, fill='tonexty', mode='lines', line_color='rgba(0,0,0,0)', name='95% Confidence', fillcolor='rgba(255, 107, 107, 0.2)'))
-    # Fix for add_vline by converting Timestamp to string
     fig_main.add_vline(x=data.index[-1].strftime("%Y-%m-%d %H:%M:%S"), line_dash="dot", line_color="rgb(255,0,0)")
     fig_main.update_layout(title="Historical Performance vs Future Predictions", xaxis_title="Date", yaxis_title="Price (₹)", template="plotly_dark", height=600)
     st.plotly_chart(fig_main, use_container_width=True)
@@ -584,65 +656,63 @@ elif "Multi-Stock Comparison" in page:
     </div>
     ''', unsafe_allow_html=True)
     
-    st.info("📌 Currently showing simulated comparison with ASIANPAINT variations.")
-    
-    stocks_data = {
-        'ASIANPAINT': data,
-        'ASIANPAINT_Bullish': data.copy(),
-        'ASIANPAINT_Conservative': data.copy()
-    }
-    stocks_data['ASIANPAINT_Bullish']['Close'] = stocks_data['ASIANPAINT_Bullish']['Close'] * 1.15
-    stocks_data['ASIANPAINT_Conservative']['Close'] = stocks_data['ASIANPAINT_Conservative']['Close'] * 0.92
-    
     st.markdown('<h2 class="section-header">📊 Stock Selection</h2>', unsafe_allow_html=True)
-    selected_stocks = st.multiselect("Select stocks to compare:", list(stocks_data.keys()), default=list(stocks_data.keys()))
+    selected_stocks = st.multiselect("Select stocks to compare:", stock_symbols, default=[st.session_state.current_stock])
     
     if selected_stocks:
-        st.markdown('<h2 class="section-header">📈 Price Comparison</h2>', unsafe_allow_html=True)
-        fig_multi = go.Figure()
-        colors = ['#00ff88', '#ff6b6b', '#ffd93d', '#4facfe', '#ff9500']
-        for i, stock in enumerate(selected_stocks):
-            stock_data = stocks_data[stock]
-            fig_multi.add_trace(go.Scatter(x=stock_data.index[-90:], y=stock_data['Close'][-90:], name=stock, line=dict(color=colors[i % len(colors)], width=2)))
-        fig_multi.update_layout(title="Multi-Stock Price Comparison (Last 90 Days)", xaxis_title="Date", yaxis_title="Price (₹)", template="plotly_dark", height=600)
-        st.plotly_chart(fig_multi, use_container_width=True)
-        
-        st.markdown('<h2 class="section-header">📊 Performance Metrics</h2>', unsafe_allow_html=True)
-        perf_data = []
+        stocks_data = {}
         for stock in selected_stocks:
-            stock_data = stocks_data[stock]
-            current_price = stock_data['Close'].iloc[-1]
-            returns_30d = ((current_price - stock_data['Close'].iloc[-31]) / stock_data['Close'].iloc[-31]) * 100
-            returns_90d = ((current_price - stock_data['Close'].iloc[-91]) / stock_data['Close'].iloc[-91]) * 100
-            volatility = stock_data['Close'].pct_change().tail(30).std() * np.sqrt(252) * 100
-            perf_data.append({
-                'Stock': stock,
-                'Current Price': f"₹{current_price:.2f}",
-                '30D Return (%)': f"{returns_30d:+.2f}%",
-                '90D Return (%)': f"{returns_90d:+.2f}%",
-                'Volatility (%)': f"{volatility:.2f}%",
-                'Volume': f"{stock_data['Volume'].iloc[-1]:,}"
-            })
-        df_perf = pd.DataFrame(perf_data)
-        st.dataframe(df_perf, use_container_width=True)
+            stock_data = load_stock_data(stock)
+            if stock_data is not None:
+                stock_data = calculate_technical_indicators(stock_data)
+                stocks_data[stock] = stock_data
         
-        st.markdown('<h2 class="section-header">💼 Portfolio Allocation</h2>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            weights = {}
-            total_weight = 0
-            st.markdown("### Set Portfolio Weights")
-            for stock in selected_stocks:
-                weight = st.slider(f"{stock} allocation", 0, 100, 100 // len(selected_stocks))
-                weights[stock] = weight
-                total_weight += weight
-            if total_weight != 100:
-                st.warning(f"⚠️ Total allocation: {total_weight}%. Please adjust to 100%.")
-        with col2:
-            if total_weight > 0:
-                fig_portfolio = px.pie(values=list(weights.values()), names=list(weights.keys()), title="Portfolio Allocation", color_discrete_sequence=colors)
-                fig_portfolio.update_layout(template="plotly_dark", height=400)
-                st.plotly_chart(fig_portfolio, use_container_width=True)
+        if stocks_data:
+            st.markdown('<h2 class="section-header">📈 Price Comparison</h2>', unsafe_allow_html=True)
+            fig_multi = go.Figure()
+            colors = ['#00ff88', '#ff6b6b', '#ffd93d', '#4facfe', '#ff9500']
+            for i, stock in enumerate(stocks_data):
+                stock_data = stocks_data[stock]
+                fig_multi.add_trace(go.Scatter(x=stock_data.index[-90:], y=stock_data['Close'][-90:], name=stock, line=dict(color=colors[i % len(colors)], width=2)))
+            fig_multi.update_layout(title="Multi-Stock Price Comparison (Last 90 Days)", xaxis_title="Date", yaxis_title="Price (₹)", template="plotly_dark", height=600)
+            st.plotly_chart(fig_multi, use_container_width=True)
+            
+            st.markdown('<h2 class="section-header">📊 Performance Metrics</h2>', unsafe_allow_html=True)
+            perf_data = []
+            for stock in stocks_data:
+                stock_data = stocks_data[stock]
+                current_price = stock_data['Close'].iloc[-1]
+                returns_30d = ((current_price - stock_data['Close'].iloc[-31]) / stock_data['Close'].iloc[-31]) * 100
+                returns_90d = ((current_price - stock_data['Close'].iloc[-91]) / stock_data['Close'].iloc[-91]) * 100
+                volatility = stock_data['Close'].pct_change().tail(30).std() * np.sqrt(252) * 100
+                perf_data.append({
+                    'Stock': stock,
+                    'Current Price': f"₹{current_price:.2f}",
+                    '30D Return (%)': f"{returns_30d:+.2f}%",
+                    '90D Return (%)': f"{returns_90d:+.2f}%",
+                    'Volatility (%)': f"{volatility:.2f}%",
+                    'Volume': f"{stock_data['Volume'].iloc[-1]:,}"
+                })
+            df_perf = pd.DataFrame(perf_data)
+            st.dataframe(df_perf, use_container_width=True)
+            
+            st.markdown('<h2 class="section-header">💼 Portfolio Allocation</h2>', unsafe_allow_html=True)
+            col1, col2 = st.columns(2)
+            with col1:
+                weights = {}
+                total_weight = 0
+                st.markdown("### Set Portfolio Weights")
+                for stock in stocks_data:
+                    weight = st.slider(f"{stock} allocation", 0, 100, 100 // len(stocks_data))
+                    weights[stock] = weight
+                    total_weight += weight
+                if total_weight != 100:
+                    st.warning(f"⚠️ Total allocation: {total_weight}%. Please adjust to 100%.")
+            with col2:
+                if total_weight > 0:
+                    fig_portfolio = px.pie(values=list(weights.values()), names=list(weights.keys()), title="Portfolio Allocation", color_discrete_sequence=colors)
+                    fig_portfolio.update_layout(template="plotly_dark", height=400)
+                    st.plotly_chart(fig_portfolio, use_container_width=True)
 
 elif "Reports & Insights" in page:
     st.markdown(f'''
@@ -692,7 +762,7 @@ elif "Reports & Insights" in page:
                 </div>
                 ''', unsafe_allow_html=True)
                 report_content = f"""
-ASIANPAINT Stock Analysis Report
+{st.session_state.current_stock} Stock Analysis Report
 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')}
 
 === {days}-Day Forecast ===
@@ -711,7 +781,7 @@ MA50: ₹{data['MA50'].iloc[-1]:.2f}
 === Recommendation ===
 {'BUY' if change > 2 else 'SELL' if change < -2 else 'HOLD'}
                 """
-                st.download_button(f"📥 Download {days}D Report", data=report_content, file_name=f"ASIANPAINT_{days}day_report.txt", mime="text/plain")
+                st.download_button(f"📥 Download {days}D Report", data=report_content, file_name=f"{st.session_state.current_stock}_{days}day_report.txt", mime="text/plain")
     
     st.markdown('<h2 class="section-header">🔍 Market Insights</h2>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -745,7 +815,7 @@ MA50: ₹{data['MA50'].iloc[-1]:.2f}
 st.markdown("---")
 st.markdown('''
 <div style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.7);">
-    <p>🚀 <strong>StockVision Pro</strong> - Advanced AI-Powered Stock Market Prediction Platform</p>
+    <p>🚀 <strong>Stock Analytics</strong> - Advanced AI-Powered Stock Market Analytics Platform</p>
     <p>💡 Built with cutting-edge machine learning algorithms and modern web technologies</p>
     <p style="font-size: 0.9rem;">⚠️ <em>This is a demo application. Always consult with financial advisors for investment decisions.</em></p>
 </div>
