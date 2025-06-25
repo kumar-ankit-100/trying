@@ -263,7 +263,7 @@ def get_advanced_theme_css():
 
 # Initialize session state
 if 'current_stock' not in st.session_state:
-    st.session_state.current_stock = 'ASIANPAINT'
+    st.session_state.current_stock = 'AXISBANK'
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
 
