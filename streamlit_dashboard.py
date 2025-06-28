@@ -277,7 +277,7 @@ stock_symbols.sort()  # Sort for consistent display
 
 # Define model and scaler file mappings
 model_mappings = {
-    symbol: (f'models/{symbol}_model.h5', f'models/{symbol}_scaler.pkl')
+    symbol: (f'lstm_models/{symbol}_model.h5', f'lstm_models/{symbol}_scaler.pkl')
     for symbol in stock_symbols
 }
 
